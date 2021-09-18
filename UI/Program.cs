@@ -20,9 +20,9 @@ namespace UI
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             string connectionString = "server=localhost; port=3306; database=phone_directory; user=root; password=3010; Persist Security Info=False; Connect Timeout=300";
-            DbContextOptionsBuilder dbContextBuilder =new DbContextOptionsBuilder().UseMySql(connectionString, ServerVersion.AutoDetect(connectionString), null);
-            PlutoContext plutoContext = new PlutoContext(new DbContextOptionsBuilder().UseMySql(connectionString, ServerVersion.AutoDetect(connectionString), null).Options);
-            plutoContext.Database.EnsureCreated();
+            DbContextOptionsBuilder dbContextBuilder =new DbContextOptionsBuilder().UseMySql(connectionString, ServerVersion.AutoDetect(connectionString),null);
+            dbContextBuilder.EnableSensitiveDataLogging(true);
+            PlutoContext plutoContext = new PlutoContext(dbContextBuilder.Options);
             UnitOfWork unitOfWork = new UnitOfWork(plutoContext);
             
             Application.Run(new PhoneDirectory(unitOfWork));

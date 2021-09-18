@@ -9,6 +9,6 @@ namespace Repository
     public interface IUnitOfWork:IDisposable
     {
         IPersonRepository People { get; }
-        int Complete();
+        int Complete(object entity);
     }
 }

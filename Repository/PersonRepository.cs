@@ -19,7 +19,7 @@ namespace Repository
         public PlutoContext PlutoContext { get { return Context as PlutoContext; } }
         public void Add(Person entity)
         {
-            Context.Set<Person>().Add(entity);
+            PlutoContext.people.Add(entity);
         }
 
         public void AddRange(IEnumerable<Person> entities)
@@ -39,7 +39,7 @@ namespace Repository
 
         public IEnumerable<Person> GetAll()
         {
-            return  Context.Set<Person>();
+            return Context.Set<Person>().AsNoTracking();
         }
 
         public IEnumerable<Person> GetPeopleByAddress(string address)
@@ -59,12 +59,12 @@ namespace Repository
 
         public void Remove(Person entity)
         {
-            throw new NotImplementedException();
+            PlutoContext.people.Remove(entity);
         }
 
         public void RemoveRange(IEnumerable<Person> entities)
         {
-            throw new NotImplementedException();
+            base.RemoveRange(entities);
         }
     }
 }

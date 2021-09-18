@@ -5,6 +5,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations;
 
 namespace Repository
 {
@@ -16,13 +17,43 @@ namespace Repository
         {
             Context = context;
         }
+
+        public void Validate(TEntity person)
+        {
+            List<ValidationResult> results = new List<ValidationResult>();
+            ValidationContext validationContext = new ValidationContext(person);
+
+            StringBuilder stringBuilder = new StringBuilder();
+            if (!Validator.TryValidateObject(person, validationContext, results,validateAllProperties:true))
+            {
+                foreach (var result in results)
+                {
+                    stringBuilder.AppendLine($"o {result.ErrorMessage}");
+                }
+            }
+
+            if (stringBuilder.ToString().Length > 0)
+            {
+                throw new ArgumentException(stringBuilder.ToString());
+            }
+        }
         public void Add(TEntity entity)
         {
-            Context.Set<TEntity>().Add(entity);
-        }
+            try
+            {
+                Validate(entity);
+                Context.Set<TEntity>().Add(entity).State = EntityState.Added;
+                Context.Entry(entity).State = EntityState.Detached;
 
+            }
+            catch (ArgumentException ex)
+            {
+                throw new ArgumentException(ex.Message);
+            }
+        }
         public void AddRange(IEnumerable<TEntity> entities)
         {
+            
             Context.Set<TEntity>().AddRange(entities);
         }
 
