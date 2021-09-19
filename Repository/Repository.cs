@@ -18,13 +18,13 @@ namespace Repository
             Context = context;
         }
 
-        public void Validate(TEntity person)
+        public void Validate(TEntity entity)
         {
             List<ValidationResult> results = new List<ValidationResult>();
-            ValidationContext validationContext = new ValidationContext(person);
+            ValidationContext validationContext = new ValidationContext(entity);
 
             StringBuilder stringBuilder = new StringBuilder();
-            if (!Validator.TryValidateObject(person, validationContext, results,validateAllProperties:true))
+            if (!Validator.TryValidateObject(entity, validationContext, results,validateAllProperties:true))
             {
                 foreach (var result in results)
                 {
@@ -42,8 +42,7 @@ namespace Repository
             try
             {
                 Validate(entity);
-                Context.Set<TEntity>().Add(entity).State = EntityState.Added;
-                Context.Entry(entity).State = EntityState.Detached;
+                Context.Set<TEntity>().Add(entity);
 
             }
             catch (ArgumentException ex)
@@ -69,7 +68,7 @@ namespace Repository
 
         public IEnumerable<TEntity> GetAll()
         {
-            return Context.Set<TEntity>().ToList();
+            return Context.Set<TEntity>().AsNoTracking();
         }
 
         public void Remove(TEntity entity)
@@ -80,6 +79,17 @@ namespace Repository
         public void RemoveRange(IEnumerable<TEntity> entities)
         {
             Context.Set<TEntity>().RemoveRange(entities);
+        }
+
+        public void Update(TEntity entity)
+        {
+            Validate(entity);
+            Context.Set<TEntity>().Update(entity);
+        }
+
+        public void UpdateRange(TEntity entities)
+        {
+            Context.Set<TEntity>().UpdateRange(entities);
         }
     }
 }

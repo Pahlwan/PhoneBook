@@ -61,8 +61,11 @@ namespace UI
             }
             if(id == 0)
             {
-                id = _unitOfWork.People.GetAll().Last().id + 1;
-                selectedRow.Cells[0].Value = id;
+                try
+                {
+                    id = _unitOfWork.People.GetAll().Last().id + 1;
+                }
+                catch { }
             }
             person.id = id;
             person.name = selectedRow.Cells[1].Value.ToString();
@@ -74,18 +77,35 @@ namespace UI
 
         private void dataGridViewPhoneDirectory_CellEndEdit(object sender, DataGridViewCellEventArgs e)
         {
+            if (dataGridViewPhoneDirectory.CurrentRow.Cells[0].Value.ToString().Count() > 0)
+            {
+                try
+                {
 
+                    SelectedPerson = ViewToModel(dataGridViewPhoneDirectory.CurrentRow);
+                    _unitOfWork.People.Update(SelectedPerson);
+                    _unitOfWork.Complete(SelectedPerson);
+                    dataGridViewPhoneDirectory.CurrentRow.Cells[0].Value = SelectedPerson.id;
+
+                }
+                catch (ArgumentException ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
+                return;
+            }
             if (e.ColumnIndex == 3)
             {
+                
                 try
                 {
                    
                     SelectedPerson = ViewToModel(dataGridViewPhoneDirectory.CurrentRow);
                     _unitOfWork.People.Add(SelectedPerson);
                     _unitOfWork.Complete(SelectedPerson);
+                    dataGridViewPhoneDirectory.CurrentRow.Cells[0].Value = SelectedPerson.id;
                     dataGridViewPhoneDirectory.Rows.Add(new[] { "", "", "", "" });
                     dataGridViewPhoneDirectory.CurrentCell = dataGridViewPhoneDirectory.Rows[e.RowIndex + 1].Cells[1];
-
 
                 }
                 catch (ArgumentException ex)
@@ -103,6 +123,11 @@ namespace UI
         {
             if (e.KeyCode == Keys.Delete)
             {
+                if(dataGridViewPhoneDirectory.CurrentRow.Cells[0].Value.ToString().Count()==0)
+                {
+                    dataGridViewPhoneDirectory.Rows.Remove(dataGridViewPhoneDirectory.CurrentRow);
+                    return;
+                }
                 try
                 {
                     SelectedPerson = ViewToModel(dataGridViewPhoneDirectory.CurrentRow);
@@ -110,10 +135,45 @@ namespace UI
                     _unitOfWork.Complete(SelectedPerson);
                     dataGridViewPhoneDirectory.Rows.Remove(dataGridViewPhoneDirectory.CurrentRow);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     MessageBox.Show(ex.Message);
                 }
+                return;
+            }
+            if (dataGridViewPhoneDirectory.CurrentCell.ColumnIndex == 3 && e.KeyData == Keys.Enter && dataGridViewPhoneDirectory.CurrentRow.Cells[1].Value.ToString().Count()>0)
+            {
+                if (dataGridViewPhoneDirectory.CurrentRow.Cells[0].Value.ToString().Count() > 0)
+                {
+                    try
+                    {
+                        SelectedPerson = ViewToModel(dataGridViewPhoneDirectory.CurrentRow);
+                        _unitOfWork.People.Update(SelectedPerson);
+                        _unitOfWork.Complete(SelectedPerson);
+                        dataGridViewPhoneDirectory.CurrentRow.Cells[0].Value = SelectedPerson.id;
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message);
+                    }
+                }
+                else
+                {
+                    try
+                    {
+                        SelectedPerson = ViewToModel(dataGridViewPhoneDirectory.CurrentRow);
+                        _unitOfWork.People.Add(SelectedPerson);
+                        _unitOfWork.Complete(SelectedPerson);
+                        dataGridViewPhoneDirectory.CurrentRow.Cells[0].Value = SelectedPerson.id;
+                        dataGridViewPhoneDirectory.Rows.Add(new[] { "", "", "", "" });
+                        dataGridViewPhoneDirectory.CurrentCell = dataGridViewPhoneDirectory.Rows[dataGridViewPhoneDirectory.CurrentCell.RowIndex + 1].Cells[1];
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message);
+                    }
+                }
+                
             }
         }
         private void buttonAdd_MouseEnter(object sender, EventArgs e)

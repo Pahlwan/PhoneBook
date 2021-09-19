@@ -150,6 +150,7 @@ namespace UI
             // 
             this.IdCol.HeaderText = "Id";
             this.IdCol.Name = "IdCol";
+            this.IdCol.Visible = false;
             // 
             // NameCol
             // 
