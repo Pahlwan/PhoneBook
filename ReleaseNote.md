@@ -1,8 +1,8 @@
-﻿#Bug fixes
+﻿# Bug fixes
 * Empty row deletion fix.
 * Last remaining record deletion fix.
 
-#Features added
+# Features added
 * Updation of record added.
 * Insertion of new row on enter key.
 
