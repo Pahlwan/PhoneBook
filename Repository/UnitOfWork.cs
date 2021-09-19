@@ -17,12 +17,12 @@ namespace Repository
         }
         public IPersonRepository People { get; private set; }
 
-        public int Complete()
+        public int Complete(object entity)
         {
-           
-            return _context.SaveChanges();
+            int ret =  _context.SaveChanges();
+            _context.Entry(entity).State = Microsoft.EntityFrameworkCore.EntityState.Detached;
+            return ret;
         }
-
         public void Dispose()
         {
             _context.Dispose();

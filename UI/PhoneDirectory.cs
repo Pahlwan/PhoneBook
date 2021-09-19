@@ -20,6 +20,7 @@ namespace UI
         {
             InitializeComponent();
             _unitOfWork = unitOfWork;
+            dataGridViewPhoneDirectory.Focus();
         }
 
         public Person SelectedPerson { get; set; }
@@ -43,35 +44,188 @@ namespace UI
         {
             foreach(var person in _unitOfWork.People.GetAll())
             {
-                dataGridViewPhoneDirectory.Rows.Add(new[] { person.name, person.phoneNumber, person.address });
+                dataGridViewPhoneDirectory.Rows.Add(new[] { person.id.ToString(),person.name, person.phoneNumber, person.address });
             }
+            Focus();
+            dataGridViewPhoneDirectory.Focus();
         }
-
-        //DataGridViewRow ModelToView(Person person)
-        //{
-
-        //}
 
         Person ViewToModel(DataGridViewRow row)
         {
             DataGridViewRow selectedRow = dataGridViewPhoneDirectory.CurrentRow;
             Person person = new Person();
-            person.name = selectedRow.Cells[0].Value.ToString();
-            person.phoneNumber = selectedRow.Cells[1].Value.ToString();
-            person.address = selectedRow.Cells[2].Value.ToString();
+            int id;
+            if (int.TryParse(selectedRow.Cells[0].Value.ToString(), out id))
+            {
+                person.id = id;
+            }
+            if(id == 0)
+            {
+                try
+                {
+                    id = _unitOfWork.People.GetAll().Last().id + 1;
+                }
+                catch { }
+            }
+            person.id = id;
+            person.name = selectedRow.Cells[1].Value.ToString();
+            person.phoneNumber = selectedRow.Cells[2].Value.ToString();
+            person.address = selectedRow.Cells[3].Value.ToString();
             return person;
         }
-        
+
 
         private void dataGridViewPhoneDirectory_CellEndEdit(object sender, DataGridViewCellEventArgs e)
         {
-            if (e.ColumnIndex == 2)
+            if (dataGridViewPhoneDirectory.CurrentRow.Cells[0].Value.ToString().Count() > 0)
             {
-                SelectedPerson = ViewToModel(dataGridViewPhoneDirectory.CurrentRow);
-                _unitOfWork.People.Add(SelectedPerson);
-                _unitOfWork.Complete();
+                try
+                {
+
+                    SelectedPerson = ViewToModel(dataGridViewPhoneDirectory.CurrentRow);
+                    _unitOfWork.People.Update(SelectedPerson);
+                    _unitOfWork.Complete(SelectedPerson);
+                    dataGridViewPhoneDirectory.CurrentRow.Cells[0].Value = SelectedPerson.id;
+
+                }
+                catch (ArgumentException ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
+                return;
             }
-            
+            if (e.ColumnIndex == 3)
+            {
+                
+                try
+                {
+                   
+                    SelectedPerson = ViewToModel(dataGridViewPhoneDirectory.CurrentRow);
+                    _unitOfWork.People.Add(SelectedPerson);
+                    _unitOfWork.Complete(SelectedPerson);
+                    dataGridViewPhoneDirectory.CurrentRow.Cells[0].Value = SelectedPerson.id;
+                    dataGridViewPhoneDirectory.Rows.Add(new[] { "", "", "", "" });
+                    dataGridViewPhoneDirectory.CurrentCell = dataGridViewPhoneDirectory.Rows[e.RowIndex + 1].Cells[1];
+
+                }
+                catch (ArgumentException ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
+            }
+           
         }
+
+        private void dataGridViewPhoneDirectory_CellLeave(object sender, DataGridViewCellEventArgs e)
+        {
+        }
+        private void dataGridViewPhoneDirectory_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Delete)
+            {
+                if(dataGridViewPhoneDirectory.CurrentRow.Cells[0].Value.ToString().Count()==0)
+                {
+                    dataGridViewPhoneDirectory.Rows.Remove(dataGridViewPhoneDirectory.CurrentRow);
+                    return;
+                }
+                try
+                {
+                    SelectedPerson = ViewToModel(dataGridViewPhoneDirectory.CurrentRow);
+                    _unitOfWork.People.Remove(SelectedPerson);
+                    _unitOfWork.Complete(SelectedPerson);
+                    dataGridViewPhoneDirectory.Rows.Remove(dataGridViewPhoneDirectory.CurrentRow);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
+                return;
+            }
+            if (dataGridViewPhoneDirectory.CurrentCell.ColumnIndex == 3 && e.KeyData == Keys.Enter && dataGridViewPhoneDirectory.CurrentRow.Cells[1].Value.ToString().Count()>0)
+            {
+                if (dataGridViewPhoneDirectory.CurrentRow.Cells[0].Value.ToString().Count() > 0)
+                {
+                    try
+                    {
+                        SelectedPerson = ViewToModel(dataGridViewPhoneDirectory.CurrentRow);
+                        _unitOfWork.People.Update(SelectedPerson);
+                        _unitOfWork.Complete(SelectedPerson);
+                        dataGridViewPhoneDirectory.CurrentRow.Cells[0].Value = SelectedPerson.id;
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message);
+                    }
+                }
+                else
+                {
+                    try
+                    {
+                        SelectedPerson = ViewToModel(dataGridViewPhoneDirectory.CurrentRow);
+                        _unitOfWork.People.Add(SelectedPerson);
+                        _unitOfWork.Complete(SelectedPerson);
+                        dataGridViewPhoneDirectory.CurrentRow.Cells[0].Value = SelectedPerson.id;
+                        dataGridViewPhoneDirectory.Rows.Add(new[] { "", "", "", "" });
+                        dataGridViewPhoneDirectory.CurrentCell = dataGridViewPhoneDirectory.Rows[dataGridViewPhoneDirectory.CurrentCell.RowIndex + 1].Cells[1];
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message);
+                    }
+                }
+                
+            }
+        }
+        private void buttonAdd_MouseEnter(object sender, EventArgs e)
+        {
+            buttonAdd.FlatAppearance.MouseOverBackColor = buttonAdd.BackColor;
+            buttonAdd.FlatAppearance.MouseDownBackColor = buttonAdd.BackColor;
+            buttonAdd.BackColor = Color.Teal;
+            buttonAdd.FlatStyle = FlatStyle.Flat;
+            buttonAdd.BackgroundImage = Resources.add_user__1_;
+        }
+
+        private void buttonAdd_MouseLeave(object sender, EventArgs e)
+        {
+            buttonAdd.BackColor = Color.Teal;
+            buttonAdd.FlatStyle = FlatStyle.Flat;
+            buttonAdd.BackgroundImage = Resources.add_user;
+        }
+
+        private void buttonAdd_MouseDown(object sender, MouseEventArgs e)
+        {
+            buttonAdd.BackgroundImage = Resources.add_user_press;
+        }
+
+        private void buttonAdd_MouseUp(object sender, MouseEventArgs e)
+        {
+            buttonAdd.BackgroundImage = Resources.add_user__1_;
+            dataGridViewPhoneDirectory.Rows.Add(new[] {"", "", "", "" });
+        }
+
+        private void buttonSearch_MouseHover(object sender, EventArgs e)
+        {
+            buttonSearch.FlatAppearance.MouseOverBackColor = buttonSearch.BackColor;
+            buttonSearch.FlatAppearance.MouseDownBackColor = buttonSearch.BackColor;
+            buttonSearch.BackColor = Color.Teal;
+            buttonSearch.FlatStyle = FlatStyle.Flat;
+            buttonSearch.Size = new Size(35, 35);
+        }
+
+        private void buttonSearch_MouseDown(object sender, MouseEventArgs e)
+        {
+            buttonSearch.Size = new Size(25, 25);
+        }
+
+        private void buttonSearch_MouseLeave(object sender, EventArgs e)
+        {
+            buttonSearch.Size = new Size(30, 30);
+        }
+
+        private void buttonSearch_MouseUp(object sender, MouseEventArgs e)
+        {
+            buttonSearch.Size = new Size(35, 35);
+        }
+
     }
 }

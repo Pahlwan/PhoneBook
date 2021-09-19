@@ -5,6 +5,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations;
 
 namespace Repository
 {
@@ -16,13 +17,42 @@ namespace Repository
         {
             Context = context;
         }
+
+        public void Validate(TEntity entity)
+        {
+            List<ValidationResult> results = new List<ValidationResult>();
+            ValidationContext validationContext = new ValidationContext(entity);
+
+            StringBuilder stringBuilder = new StringBuilder();
+            if (!Validator.TryValidateObject(entity, validationContext, results,validateAllProperties:true))
+            {
+                foreach (var result in results)
+                {
+                    stringBuilder.AppendLine($"o {result.ErrorMessage}");
+                }
+            }
+
+            if (stringBuilder.ToString().Length > 0)
+            {
+                throw new ArgumentException(stringBuilder.ToString());
+            }
+        }
         public void Add(TEntity entity)
         {
-            Context.Set<TEntity>().Add(entity);
-        }
+            try
+            {
+                Validate(entity);
+                Context.Set<TEntity>().Add(entity);
 
+            }
+            catch (ArgumentException ex)
+            {
+                throw new ArgumentException(ex.Message);
+            }
+        }
         public void AddRange(IEnumerable<TEntity> entities)
         {
+            
             Context.Set<TEntity>().AddRange(entities);
         }
 
@@ -38,7 +68,7 @@ namespace Repository
 
         public IEnumerable<TEntity> GetAll()
         {
-            return Context.Set<TEntity>().ToList();
+            return Context.Set<TEntity>().AsNoTracking();
         }
 
         public void Remove(TEntity entity)
@@ -49,6 +79,17 @@ namespace Repository
         public void RemoveRange(IEnumerable<TEntity> entities)
         {
             Context.Set<TEntity>().RemoveRange(entities);
+        }
+
+        public void Update(TEntity entity)
+        {
+            Validate(entity);
+            Context.Set<TEntity>().Update(entity);
+        }
+
+        public void UpdateRange(TEntity entities)
+        {
+            Context.Set<TEntity>().UpdateRange(entities);
         }
     }
 }

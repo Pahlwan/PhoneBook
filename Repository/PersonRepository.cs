@@ -2,6 +2,7 @@
 using Repository.Models;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
@@ -16,32 +17,9 @@ namespace Repository
 
         }
 
+
         public PlutoContext PlutoContext { get { return Context as PlutoContext; } }
-        public void Add(Person entity)
-        {
-            Context.Set<Person>().Add(entity);
-        }
-
-        public void AddRange(IEnumerable<Person> entities)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Person Find(Expression<Func<Person, bool>> predicate)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Person Get(int id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IEnumerable<Person> GetAll()
-        {
-            return  Context.Set<Person>();
-        }
-
+        
         public IEnumerable<Person> GetPeopleByAddress(string address)
         {
             return PlutoContext.people.Where(item => item.address == address).ToList();
@@ -57,14 +35,5 @@ namespace Repository
             return PlutoContext.people.Where(item => item.name == name).FirstOrDefault();
         }
 
-        public void Remove(Person entity)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void RemoveRange(IEnumerable<Person> entities)
-        {
-            throw new NotImplementedException();
-        }
     }
 }
